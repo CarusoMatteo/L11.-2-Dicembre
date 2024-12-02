@@ -6,7 +6,10 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -27,7 +30,8 @@ import javax.swing.JTextArea;
  *
  * 4) List all the words in alphabetical order
  * 
- * 5) Write the count for each word, e.g. "word word pippo" should output "pippo -> 1 word -> 2"
+ * 5) Write the count for each word.
+ * "word word pippo" should output "pippo -> 1 word -> 2"
  *
  */
 public final class LambdaFilter extends JFrame {
@@ -38,7 +42,12 @@ public final class LambdaFilter extends JFrame {
         /**
          * Commands.
          */
-        IDENTITY("No modifications", Function.identity());
+        IDENTITY("No modifications", Function.identity()),
+        TO_LOWER("To lower case", Command::toLowerCase),
+        COUNT_CHARS("Count the number of chars", Command::numOfChars),
+        COUNT_LINES("Count the number of lines", Command::numOfLines),
+        SORT_ALPHABETICAL("List all the words in alphabetical order", Command::sortAlphabetical),
+        COUNT_WORDS("Write the count for each word", Command::countWords);
 
         private final String commandName;
         private final Function<String, String> fun;
@@ -56,11 +65,42 @@ public final class LambdaFilter extends JFrame {
         public String translate(final String s) {
             return fun.apply(s);
         }
+
+        private static String toLowerCase(final String s) {
+            return s.toLowerCase(Locale.getDefault());
+        }
+
+        private static String numOfChars(final String s) {
+            return String.valueOf(s.length());
+        }
+
+        private static String numOfLines(final String s) {
+            return String.valueOf(s.lines().count());
+        }
+
+        private static String sortAlphabetical(final String s) {
+            return List.of(s.split(" "))
+                    .stream()
+                    .sorted(String::compareTo)
+                    .map(str -> str.concat(" "))
+                    .reduce(String::concat)
+                    .orElse("");
+        }
+
+        private static String countWords(final String s) {
+            return List.of(s.split(" "))
+                    .stream()
+                    .collect(Collectors.toMap(word -> word, word -> 1, (a, b) -> a + b))
+                    .entrySet().stream()
+                    .map(entry -> entry.getKey() + " -> " + entry.getValue() + " ")
+                    .reduce(String::concat)
+                    .orElse("");
+        }
     }
 
     private LambdaFilter() {
         super("Lambda filter GUI");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         final JPanel panel1 = new JPanel();
         final LayoutManager layout = new BorderLayout();
         panel1.setLayout(layout);
