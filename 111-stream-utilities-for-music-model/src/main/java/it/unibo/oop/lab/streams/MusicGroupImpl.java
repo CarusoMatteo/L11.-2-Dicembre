@@ -1,5 +1,6 @@
 package it.unibo.oop.lab.streams;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -58,9 +59,10 @@ public final class MusicGroupImpl implements MusicGroup {
 
     @Override
     public int countSongsInNoAlbum() {
-        return (int) songs.stream()
+        return songs.stream()
                 .filter(s -> s.getAlbumName().isEmpty())
-                .count();
+                .mapToInt(e -> 1)
+                .sum();
     }
 
     @Override
@@ -75,12 +77,14 @@ public final class MusicGroupImpl implements MusicGroup {
     @Override
     public Optional<String> longestSong() {
         return songs.stream()
-                .max(Song::compareTo)
+                .max(Comparator.comparingDouble(Song::getDuration))
                 .map(Song::getSongName);
     }
 
     @Override
     public Optional<String> longestAlbum() {
+        // Use collector
+
         return albums.keySet().stream()
                 .map(album1 -> new Pair<String, Double>(album1, songs.stream()
                         .filter(s1 -> s1.getAlbumName().isPresent())
@@ -94,7 +98,7 @@ public final class MusicGroupImpl implements MusicGroup {
     private record Pair<K, V>(K key, V value) {
     }
 
-    private static final class Song implements Comparable<Song> {
+    private static final class Song {
 
         private final String songName;
         private final Optional<String> albumName;
@@ -141,11 +145,6 @@ public final class MusicGroupImpl implements MusicGroup {
         @Override
         public String toString() {
             return "Song [songName=" + songName + ", albumName=" + albumName + ", duration=" + duration + "]";
-        }
-
-        @Override
-        public int compareTo(final Song o) {
-            return Double.compare(this.duration, o.duration);
         }
     }
 
