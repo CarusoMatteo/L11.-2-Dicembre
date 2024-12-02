@@ -4,9 +4,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -83,19 +85,15 @@ public final class MusicGroupImpl implements MusicGroup {
 
     @Override
     public Optional<String> longestAlbum() {
-        // Use collector
-
         return albums.keySet().stream()
-                .map(album1 -> new Pair<String, Double>(album1, songs.stream()
+                .collect(Collectors.toMap(album -> album, album -> songs.stream()
                         .filter(s1 -> s1.getAlbumName().isPresent())
-                        .filter(s2 -> s2.getAlbumName().get().equals(album1))
+                        .filter(s2 -> s2.getAlbumName().get().equals(album))
                         .mapToDouble(Song::getDuration)
                         .sum()))
-                .max((pair1, pair2) -> Double.compare(pair1.value, pair2.value))
-                .map(pair -> pair.key);
-    }
-
-    private record Pair<K, V>(K key, V value) {
+                .entrySet().stream()
+                .max(Comparator.comparingDouble(Entry::getValue))
+                .map(Entry::getKey);
     }
 
     private static final class Song {
