@@ -31,45 +31,72 @@ public final class MusicGroupImpl implements MusicGroup {
 
     @Override
     public Stream<String> orderedSongNames() {
-        return null;
+        return songs.stream()
+                .map(Song::getSongName)
+                .sorted();
     }
 
     @Override
     public Stream<String> albumNames() {
-        return null;
+        return albums.keySet().stream();
     }
 
     @Override
     public Stream<String> albumInYear(final int year) {
-        return null;
+        return albums.entrySet().stream()
+                .filter((e) -> e.getValue().equals(year))
+                .map(Map.Entry::getKey);
     }
 
     @Override
     public int countSongs(final String albumName) {
-        return -1;
+        return (int) songs.stream()
+                .filter(s -> s.getAlbumName().isPresent())
+                .filter(s -> s.getAlbumName().get().equals(albumName))
+                .count();
     }
 
     @Override
     public int countSongsInNoAlbum() {
-        return -1;
+        return (int) songs.stream()
+                .filter(s -> s.getAlbumName().isEmpty())
+                .count();
     }
 
     @Override
     public OptionalDouble averageDurationOfSongs(final String albumName) {
-        return null;
+        return songs.stream()
+                .filter(s -> s.getAlbumName().isPresent())
+                .filter(s -> s.getAlbumName().get().equals(albumName))
+                .mapToDouble(Song::getDuration)
+                .average();
     }
 
     @Override
     public Optional<String> longestSong() {
-        return null;
+        return songs.stream()
+                .max(Song::compareTo)
+                .map(Song::getSongName);
     }
 
     @Override
     public Optional<String> longestAlbum() {
-        return null;
+        final Map<String, Double> durations = new HashMap<>();
+
+        albums.keySet().forEach(album -> {
+            durations.put(album, songs.stream()
+                    .filter(s -> s.getAlbumName().isPresent())
+                    .filter(s -> s.getAlbumName().get().equals(album))
+                    .mapToDouble(Song::getDuration)
+                    .sum());
+        });
+
+        return durations.entrySet().stream()
+                .max((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
+                .map(Map.Entry::getKey);
     }
 
-    private static final class Song {
+    private static final class Song implements Comparable<Song> {
 
         private final String songName;
         private final Optional<String> albumName;
@@ -118,6 +145,10 @@ public final class MusicGroupImpl implements MusicGroup {
             return "Song [songName=" + songName + ", albumName=" + albumName + ", duration=" + duration + "]";
         }
 
+        @Override
+        public int compareTo(final Song o) {
+            return Double.compare(this.duration, o.duration);
+        }
     }
 
 }
