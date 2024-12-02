@@ -81,19 +81,17 @@ public final class MusicGroupImpl implements MusicGroup {
 
     @Override
     public Optional<String> longestAlbum() {
-        final Map<String, Double> durations = new HashMap<>();
+        return albums.keySet().stream()
+                .map(album1 -> new Pair<String, Double>(album1, songs.stream()
+                        .filter(s1 -> s1.getAlbumName().isPresent())
+                        .filter(s2 -> s2.getAlbumName().get().equals(album1))
+                        .mapToDouble(Song::getDuration)
+                        .sum()))
+                .max((pair1, pair2) -> Double.compare(pair1.value, pair2.value))
+                .map(pair -> pair.key);
+    }
 
-        albums.keySet().forEach(album -> {
-            durations.put(album, songs.stream()
-                    .filter(s -> s.getAlbumName().isPresent())
-                    .filter(s -> s.getAlbumName().get().equals(album))
-                    .mapToDouble(Song::getDuration)
-                    .sum());
-        });
-
-        return durations.entrySet().stream()
-                .max((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
-                .map(Map.Entry::getKey);
+    private record Pair<K, V>(K key, V value) {
     }
 
     private static final class Song implements Comparable<Song> {
