@@ -33,10 +33,7 @@ public final class Test {
      */
 
     /**
-     * 
-     * @param args
-     *            possible args to pass (not used)
-     * 
+     * @param args possible args to pass (not used)
      */
     public static void main(final String... args) {
         new ConcurrentGUI();
