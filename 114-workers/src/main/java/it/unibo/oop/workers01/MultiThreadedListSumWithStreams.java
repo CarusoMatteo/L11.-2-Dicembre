@@ -5,7 +5,6 @@ import java.util.stream.IntStream;
 
 /**
  * This is an implementation using streams.
- * 
  */
 @SuppressWarnings("CPD-START")
 public final class MultiThreadedListSumWithStreams implements SumList {
@@ -13,9 +12,7 @@ public final class MultiThreadedListSumWithStreams implements SumList {
     private final int nthread;
 
     /**
-     * 
-     * @param nthread
-     *            no. of thread performing the sum.
+     * @param nthread number of thread performing the sum.
      */
     public MultiThreadedListSumWithStreams(final int nthread) {
         this.nthread = nthread;
@@ -30,12 +27,9 @@ public final class MultiThreadedListSumWithStreams implements SumList {
         /**
          * Build a new worker.
          * 
-         * @param list
-         *            the list to sum
-         * @param startpos
-         *            the initial position for this worker
-         * @param nelem
-         *            the no. of elems to sum up for this worker
+         * @param list     the list to sum
+         * @param startpos the initial position for this worker
+         * @param nelem    the number of elems to sum up for this worker
          */
         Worker(final List<Integer> list, final int startpos, final int nelem) {
             super();
@@ -78,7 +72,7 @@ public final class MultiThreadedListSumWithStreams implements SumList {
                 .peek(Thread::start)
                 // Join them
                 .peek(MultiThreadedListSumWithStreams::joinUninterruptibly)
-                 // Get their result and sum
+                // Get their result and sum
                 .mapToLong(Worker::getResult)
                 .sum();
     }
